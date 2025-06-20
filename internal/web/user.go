@@ -1,12 +1,16 @@
 package web
 
 import (
+	"net/http"
+
 	"github.com/Guanjian104/webook/internal/domain"
 	"github.com/Guanjian104/webook/internal/service"
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"strconv"
+	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -33,7 +37,7 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug.POST("/signup", h.SignUp)
 	ug.POST("/login", h.Login)
 	ug.POST("/edit", h.Edit)
-	ug.GET("/profile", h.Profile)
+	ug.GET("/profile/:id", h.Profile)
 }
 
 func (h *UserHandler) SignUp(ctx *gin.Context) {
@@ -119,8 +123,59 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 }
 
 func (h *UserHandler) Edit(ctx *gin.Context) {
+	type EditReq struct {
+		Id          int64  `json:"id"`
+		Nickname    string `json:"nickname"`
+		Birthday    string `json:"birthday"`
+		Description string `json:"description"`
+	}
+	var req EditReq
+	if err := ctx.Bind(&req); err != nil {
+		return
+	}
+
+	if nlen := utf8.RuneCountInString(req.Nickname); nlen > 30 || nlen <= 0 {
+		ctx.String(http.StatusOK, "昵称长度要在1~30之间")
+		return
+	}
+
+	_, err := time.Parse("2006-01-02", req.Birthday)
+	if err != nil {
+		ctx.String(http.StatusOK, "生日格式出错，需为 YYYY-MM-DD 格式")
+		return
+	}
+
+	if dlen := utf8.RuneCountInString(req.Description); dlen > 500 {
+		ctx.String(http.StatusOK, "个人简介长度不能大于500")
+		return
+	}
+
+	err = h.svc.Edit(ctx, domain.User{
+		Id:          req.Id,
+		Nickname:    req.Nickname,
+		Birthday:    req.Birthday,
+		Description: req.Description,
+	})
+	switch err {
+	case nil:
+		ctx.String(http.StatusOK, "编辑成功")
+	case service.ErrEditFailure:
+		ctx.String(http.StatusOK, "编辑失败")
+	default:
+		ctx.String(http.StatusOK, "系统错误")
+	}
 }
 
 func (h *UserHandler) Profile(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "这是 profile")
+	id := ctx.Param("id")
+	id64, _ := strconv.ParseInt(id, 10, 64)
+	u, err := h.svc.Profile(ctx, id64)
+	switch err {
+	case nil:
+		ctx.JSON(200, u)
+	case service.ErrInvalidUser:
+		ctx.String(http.StatusOK, "用户不存在")
+	default:
+		ctx.String(http.StatusOK, "系统错误")
+	}
 }

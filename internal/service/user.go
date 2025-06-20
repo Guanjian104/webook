@@ -12,6 +12,8 @@ import (
 var (
 	ErrDuplicateEmail        = repository.ErrDuplicateEmail
 	ErrInvalidUserOrPassword = errors.New("用户不存在或者密码不对")
+	ErrEditFailure           = repository.ErrEditFailure
+	ErrInvalidUser           = errors.New("用户不存在")
 )
 
 type UserService struct {
@@ -45,6 +47,21 @@ func (svc *UserService) Login(ctx *gin.Context, email string, password string) (
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	if err != nil {
 		return domain.User{}, ErrInvalidUserOrPassword
+	}
+	return u, nil
+}
+
+func (svc *UserService) Edit(ctx context.Context, u domain.User) error {
+	return svc.repo.Edit(ctx, u)
+}
+
+func (svc *UserService) Profile(ctx *gin.Context, Id int64) (domain.UserProfile, error) {
+	u, err := svc.repo.FindById(ctx, Id)
+	if errors.Is(err, repository.ErrUserNotFound) {
+		return domain.UserProfile{}, ErrInvalidUser
+	}
+	if err != nil {
+		return domain.UserProfile{}, err
 	}
 	return u, nil
 }

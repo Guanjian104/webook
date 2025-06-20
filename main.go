@@ -8,7 +8,6 @@ import (
 	"github.com/Guanjian104/webook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
-	// "github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -62,12 +61,9 @@ func initWebServer() *gin.Engine {
 			return strings.Contains(origin, "your_company.com")
 		},
 		MaxAge: 12 * time.Hour,
-	}), func(ctx *gin.Context) {
-		println("这是我的 Middleware")
-	})
+	}))
 
 	login := &middleware.LoginMiddlewareBuilder{}
-	// store := cookie.NewStore([]byte("secret"))
 	store, err := redis.NewStore(16, "tcp", "127.0.0.1:6379", "root", "", []byte("k6CswdUm75WKcbM68UQUuxVsHSpTCwgK"), []byte("k6CswdUm75WKcbM68UQUuxVsHSpTCwgA"))
 	if err != nil {
 		panic(err)

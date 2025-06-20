@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"encoding/gob"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 )
 
 type LoginMiddlewareBuilder struct {
@@ -31,7 +32,7 @@ func (m *LoginMiddlewareBuilder) CheckLogin() gin.HandlerFunc {
 		val := sess.Get(updateTimeKey)
 		lastUpdateTime, ok := val.(time.Time)
 		if val == nil || !ok || now.Sub(lastUpdateTime) > time.Minute {
-			// 第一次checklogin
+			// first checklogin
 			sess.Set(updateTimeKey, now)
 			sess.Set("userId", userId)
 			err := sess.Save()

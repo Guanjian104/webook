@@ -12,6 +12,7 @@ import (
 var (
 	ErrDuplicateEmail = errors.New("邮箱冲突")
 	ErrRecordNotFound = gorm.ErrRecordNotFound
+	ErrEditFailure    = errors.New("编辑失败")
 )
 
 type UserDAO struct {
@@ -19,9 +20,12 @@ type UserDAO struct {
 }
 
 type User struct {
-	Id       int64  `gorm:"primaryKey,autoIncrement"`
-	Email    string `gorm:"unique"`
-	Password string
+	Id          int64  `gorm:"primaryKey,autoIncrement"`
+	Email       string `gorm:"unique"`
+	Password    string
+	Nickname    string
+	Birthday    string
+	Description string
 
 	Ctime int64
 	Utime int64
@@ -48,8 +52,24 @@ func (dao *UserDAO) Insert(ctx context.Context, u User) error {
 	return err
 }
 
+func (dao *UserDAO) Update(ctx context.Context, u User) error {
+	now := time.Now().UnixMilli()
+	u.Utime = now
+	result := dao.db.WithContext(ctx).Model(&u).Updates(User{Nickname: u.Nickname, Birthday: u.Birthday, Description: u.Description})
+	if result.RowsAffected == 0 {
+		return ErrEditFailure
+	}
+	return result.Error
+}
+
 func (dao *UserDAO) FindByEmail(ctx *gin.Context, email string) (User, error) {
 	var u User
 	err := dao.db.WithContext(ctx).Where("email = ?", email).First(&u).Error
+	return u, err
+}
+
+func (dao *UserDAO) FindById(ctx *gin.Context, Id int64) (User, error) {
+	var u User
+	err := dao.db.WithContext(ctx).First(&u, Id).Error
 	return u, err
 }
