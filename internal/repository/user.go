@@ -65,8 +65,6 @@ func (repo *UserRepository) toDomain(u dao.User) domain.User {
 
 func (repo *UserRepository) toProfile(u dao.User) domain.UserProfile {
 	return domain.UserProfile{
-		Id:          u.Id,
-		Email:       u.Email,
 		Nickname:    u.Nickname,
 		Birthday:    u.Birthday,
 		Description: u.Description,

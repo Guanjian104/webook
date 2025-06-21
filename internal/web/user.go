@@ -8,7 +8,7 @@ import (
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"strconv"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"time"
 	"unicode/utf8"
 )
@@ -35,9 +35,10 @@ func NewUserHandler(svc *service.UserService) *UserHandler {
 func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug := server.Group("/users")
 	ug.POST("/signup", h.SignUp)
-	ug.POST("/login", h.Login)
+	// ug.POST("/login", h.Login)
+	ug.POST("/login", h.LoginJWT)
 	ug.POST("/edit", h.Edit)
-	ug.GET("/profile/:id", h.Profile)
+	ug.GET("/profile/", h.Profile)
 }
 
 func (h *UserHandler) SignUp(ctx *gin.Context) {
@@ -91,6 +92,40 @@ func (h *UserHandler) SignUp(ctx *gin.Context) {
 	}
 }
 
+func (h *UserHandler) LoginJWT(ctx *gin.Context) {
+	type LoginReq struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	var req LoginReq
+	if err := ctx.Bind(&req); err != nil {
+		return
+	}
+
+	u, err := h.svc.Login(ctx, req.Email, req.Password)
+	switch err {
+	case nil:
+		us := UserClaims{
+			Uid:       u.Id,
+			UserAgent: ctx.GetHeader("User-Agent"),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 30)),
+			},
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, us)
+		tokenStr, err := token.SignedString(JWTKey)
+		if err != nil {
+			ctx.String(http.StatusOK, "系统错误")
+		}
+		ctx.Header("x-jwt-token", tokenStr)
+		ctx.String(http.StatusOK, "登陆成功")
+	case service.ErrInvalidUserOrPassword:
+		ctx.String(http.StatusOK, "用户名或密码不对")
+	default:
+		ctx.String(http.StatusOK, "系统错误")
+	}
+}
+
 func (h *UserHandler) Login(ctx *gin.Context) {
 	type LoginReq struct {
 		Email    string `json:"email"`
@@ -124,7 +159,6 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 
 func (h *UserHandler) Edit(ctx *gin.Context) {
 	type EditReq struct {
-		Id          int64  `json:"id"`
 		Nickname    string `json:"nickname"`
 		Birthday    string `json:"birthday"`
 		Description string `json:"description"`
@@ -150,8 +184,10 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 		return
 	}
 
+	us := ctx.MustGet("user").(UserClaims)
+	uid := us.Uid
 	err = h.svc.Edit(ctx, domain.User{
-		Id:          req.Id,
+		Id:          uid,
 		Nickname:    req.Nickname,
 		Birthday:    req.Birthday,
 		Description: req.Description,
@@ -167,9 +203,9 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 }
 
 func (h *UserHandler) Profile(ctx *gin.Context) {
-	id := ctx.Param("id")
-	id64, _ := strconv.ParseInt(id, 10, 64)
-	u, err := h.svc.Profile(ctx, id64)
+	us := ctx.MustGet("user").(UserClaims)
+	uid := us.Uid
+	u, err := h.svc.Profile(ctx, uid)
 	switch err {
 	case nil:
 		ctx.JSON(200, u)
@@ -178,4 +214,12 @@ func (h *UserHandler) Profile(ctx *gin.Context) {
 	default:
 		ctx.String(http.StatusOK, "系统错误")
 	}
+}
+
+var JWTKey = []byte("k6CswdUm77WKcbM68UQUuxVsHSpTCwgK")
+
+type UserClaims struct {
+	jwt.RegisteredClaims
+	Uid       int64
+	UserAgent string
 }

@@ -14,8 +14,6 @@ type User struct {
 }
 
 type UserProfile struct {
-	Id          int64
-	Email       string
 	Nickname    string
 	Birthday    string
 	Description string
