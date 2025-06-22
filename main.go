@@ -6,10 +6,12 @@ import (
 	"github.com/Guanjian104/webook/internal/service"
 	"github.com/Guanjian104/webook/internal/web"
 	"github.com/Guanjian104/webook/internal/web/middleware"
+	"github.com/Guanjian104/webook/pkg/ginx/middleware/ratelimit"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"strings"
@@ -63,6 +65,11 @@ func initWebServer() *gin.Engine {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	server.Use(ratelimit.NewBuilder(redisClient, time.Second, 100).Build())
 
 	useJWT(server)
 	// useSession(server)
