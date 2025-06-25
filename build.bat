@@ -47,6 +47,13 @@ if !errorlevel! neq 0 (
 )
 echo ✅ Go程序构建成功
 
+REM Docker服务检查
+docker version >nul 2>&1
+if !errorlevel! neq 0 (
+    echo ❌ Docker服务未运行
+    goto restore
+)
+
 REM 步骤5：删除旧Docker镜像
 echo 正在删除旧Docker镜像...
 docker rmi -f %IMAGE_NAME%:%IMAGE_VERSION%
