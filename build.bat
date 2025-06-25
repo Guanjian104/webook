@@ -1,8 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
+REM ============= 可配置变量 =============
+set IMAGE_NAME=guanjian104/webook
+set IMAGE_VERSION=v0.0.1
+REM =====================================
+
 echo ============================================
 echo 开始自动化构建流程
+echo 镜像名称: %IMAGE_NAME%:%IMAGE_VERSION%
 echo ============================================
 
 REM 步骤1：删除旧文件
@@ -42,7 +48,7 @@ echo ✅ Go程序构建成功
 
 REM 步骤5：删除旧Docker镜像
 echo 正在删除旧Docker镜像...
-docker rmi -f guanjian104/webook:v0.0.1
+docker rmi -f %IMAGE_NAME%:%IMAGE_VERSION%
 if !errorlevel! neq 0 (
     echo ℹ️ 未找到旧镜像或删除失败（可能是首次构建）
 )
@@ -50,7 +56,7 @@ echo ✅ 旧镜像清理完成
 
 REM 步骤6：构建新Docker镜像
 echo 正在构建Docker镜像...
-docker build -t guanjian104/webook:v0.0.1 .
+docker build -t %IMAGE_NAME%:%IMAGE_VERSION% .
 if !errorlevel! neq 0 (
     echo ❌ Docker镜像构建失败
     goto restore
