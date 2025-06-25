@@ -3,7 +3,8 @@ setlocal enabledelayedexpansion
 
 REM ============= 可配置变量 =============
 set IMAGE_NAME=guanjian104/webook
-set IMAGE_VERSION=v0.0.1
+set IMAGE_VERSION=%1
+if "%IMAGE_VERSION%"=="" set IMAGE_VERSION=v0.0.1
 REM =====================================
 
 echo ============================================
