@@ -51,7 +51,7 @@ func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (doma
 
 func (repo *UserRepository) FindById(ctx context.Context, Id int64) (domain.UserProfile, error) {
 	u, err := repo.cache.Get(ctx, Id)
-	if err != nil {
+	if err == nil {
 		return domainToProfile(u), err
 	}
 	ue, err := repo.dao.FindById(ctx, Id)
