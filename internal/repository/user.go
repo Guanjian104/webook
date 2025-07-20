@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"github.com/Guanjian104/webook/internal/domain"
+	"github.com/Guanjian104/webook/internal/repository/cache"
 	"github.com/Guanjian104/webook/internal/repository/dao"
-	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -14,12 +14,14 @@ var (
 )
 
 type UserRepository struct {
-	dao *dao.UserDAO
+	dao   *dao.UserDAO
+	cache *cache.UserCache
 }
 
-func NewUserRepository(dao *dao.UserDAO) *UserRepository {
+func NewUserRepository(d *dao.UserDAO, c *cache.UserCache) *UserRepository {
 	return &UserRepository{
-		dao: dao,
+		dao:   d,
+		cache: c,
 	}
 }
 
@@ -39,7 +41,7 @@ func (repo *UserRepository) Edit(ctx context.Context, u domain.User) error {
 	})
 }
 
-func (repo *UserRepository) FindByEmail(ctx *gin.Context, email string) (domain.User, error) {
+func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
 	u, err := repo.dao.FindByEmail(ctx, email)
 	if err != nil {
 		return domain.User{}, err
@@ -47,12 +49,42 @@ func (repo *UserRepository) FindByEmail(ctx *gin.Context, email string) (domain.
 	return repo.toDomain(u), nil
 }
 
-func (repo *UserRepository) FindById(ctx *gin.Context, Id int64) (domain.UserProfile, error) {
-	u, err := repo.dao.FindById(ctx, Id)
+func (repo *UserRepository) FindById(ctx context.Context, Id int64) (domain.UserProfile, error) {
+	u, err := repo.cache.Get(ctx, Id)
+	if err != nil {
+		return domainToProfile(u), err
+	}
+	ue, err := repo.dao.FindById(ctx, Id)
 	if err != nil {
 		return domain.UserProfile{}, err
 	}
-	return repo.toProfile(u), nil
+	up := domain.UserProfile{
+		Nickname:    ue.Nickname,
+		Birthday:    ue.Birthday,
+		Description: ue.Description,
+	}
+
+	// 设置缓存
+	ud := domain.User{
+		Id:          ue.Id,
+		Email:       ue.Email,
+		Password:    ue.Password,
+		Nickname:    ue.Nickname,
+		Birthday:    ue.Birthday,
+		Description: ue.Description,
+	}
+	_ = repo.cache.Set(ctx, ud)
+
+	return up, nil
+}
+
+func domainToProfile(u domain.User) domain.UserProfile {
+	// Domain To Profile
+	return domain.UserProfile{
+		Nickname:    u.Nickname,
+		Birthday:    u.Birthday,
+		Description: u.Description,
+	}
 }
 
 func (repo *UserRepository) toDomain(u dao.User) domain.User {
