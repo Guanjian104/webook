@@ -6,6 +6,8 @@ import (
     "github.com/Guanjian104/webook/internal/repository/cache"
     "github.com/Guanjian104/webook/internal/repository/dao"
     "github.com/Guanjian104/webook/internal/service"
+    "github.com/Guanjian104/webook/internal/service/sms"
+    "github.com/Guanjian104/webook/internal/service/sms/localsms"
     "github.com/Guanjian104/webook/internal/web"
     "github.com/Guanjian104/webook/internal/web/middleware"
     "github.com/Guanjian104/webook/pkg/ginx/middleware/ratelimit"
@@ -24,11 +26,13 @@ import (
 func main() {
     db := initDB()
 
-    cmd := initRedis()
+    redisClient := initRedis()
+
+    codeSvc := initCodeSvc(redisClient)
 
     server := initWebServer()
 
-    initUserHdl(db, cmd, server)
+    initUserHdl(db, redisClient, codeSvc, server)
 
     // server := gin.Default()
     server.GET("/hello", func(ctx *gin.Context) {
@@ -37,12 +41,12 @@ func main() {
     server.Run(":8080")
 }
 
-func initUserHdl(db *gorm.DB, cmd redis.Cmdable, server *gin.Engine) {
+func initUserHdl(db *gorm.DB, redisClient redis.Cmdable, codeSvc *service.CodeService, server *gin.Engine) {
     ud := dao.NewUserDAO(db)
-    uc := cache.NewUserCache(cmd)
+    uc := cache.NewUserCache(redisClient)
     ur := repository.NewUserRepository(ud, uc)
     us := service.NewUserService(ur)
-    hdl := web.NewUserHandler(us)
+    hdl := web.NewUserHandler(us, codeSvc)
     hdl.RegisterRoutes(server)
 }
 
@@ -64,6 +68,16 @@ func initRedis() redis.Cmdable {
     return redis.NewClient(&redis.Options{
         Addr: config.Config.Redis.Addr,
     })
+}
+
+func initCodeSvc(redisClient redis.Cmdable) *service.CodeService {
+    cc := cache.NewCodeCache(redisClient)
+    crepo := repository.NewCodeRepository(cc)
+    return service.NewCodeService(crepo, initSmsMemoryService())
+}
+
+func initSmsMemoryService() sms.Service {
+    return localsms.NewService()
 }
 
 func initWebServer() *gin.Engine {

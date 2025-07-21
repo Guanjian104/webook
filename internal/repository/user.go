@@ -2,15 +2,16 @@ package repository
 
 import (
     "context"
+    "database/sql"
     "github.com/Guanjian104/webook/internal/domain"
     "github.com/Guanjian104/webook/internal/repository/cache"
     "github.com/Guanjian104/webook/internal/repository/dao"
 )
 
 var (
-    ErrDuplicateEmail = dao.ErrDuplicateEmail
-    ErrUserNotFound   = dao.ErrRecordNotFound
-    ErrEditFailure    = dao.ErrEditFailure
+    ErrDuplicateUser = dao.ErrDuplicateEmail
+    ErrUserNotFound  = dao.ErrRecordNotFound
+    ErrEditFailure   = dao.ErrEditFailure
 )
 
 type UserRepository struct {
@@ -26,10 +27,7 @@ func NewUserRepository(d *dao.UserDAO, c *cache.UserCache) *UserRepository {
 }
 
 func (repo *UserRepository) Create(ctx context.Context, u domain.User) error {
-    return repo.dao.Insert(ctx, dao.User{
-        Email:    u.Email,
-        Password: u.Password,
-    })
+    return repo.dao.Insert(ctx, repo.toEntity(u))
 }
 
 func (repo *UserRepository) Edit(ctx context.Context, u domain.User) error {
@@ -67,7 +65,8 @@ func (repo *UserRepository) FindById(ctx context.Context, Id int64) (domain.User
     // 设置缓存
     ud := domain.User{
         Id:          ue.Id,
-        Email:       ue.Email,
+        Email:       ue.Email.String,
+        Phone:       ue.Phone.String,
         Password:    ue.Password,
         Nickname:    ue.Nickname,
         Birthday:    ue.Birthday,
@@ -76,6 +75,14 @@ func (repo *UserRepository) FindById(ctx context.Context, Id int64) (domain.User
     _ = repo.cache.Set(ctx, ud)
 
     return up, nil
+}
+
+func (repo *UserRepository) FindByPhone(ctx context.Context, phone string) (domain.User, error) {
+    u, err := repo.dao.FindByPhone(ctx, phone)
+    if err != nil {
+        return domain.User{}, err
+    }
+    return repo.toDomain(u), nil
 }
 
 func domainToProfile(u domain.User) domain.UserProfile {
@@ -90,7 +97,8 @@ func domainToProfile(u domain.User) domain.UserProfile {
 func (repo *UserRepository) toDomain(u dao.User) domain.User {
     return domain.User{
         Id:       u.Id,
-        Email:    u.Email,
+        Email:    u.Email.String,
+        Phone:    u.Phone.String,
         Password: u.Password,
     }
 }
@@ -100,5 +108,23 @@ func (repo *UserRepository) toProfile(u dao.User) domain.UserProfile {
         Nickname:    u.Nickname,
         Birthday:    u.Birthday,
         Description: u.Description,
+    }
+}
+
+func (repo *UserRepository) toEntity(u domain.User) dao.User {
+    return dao.User{
+        Id: u.Id,
+        Email: sql.NullString{
+            String: u.Email,
+            Valid:  u.Email != "",
+        },
+        Phone: sql.NullString{
+            String: u.Phone,
+            Valid:  u.Phone != "",
+        },
+        Password:    u.Password,
+        Birthday:    u.Birthday,
+        Description: u.Description,
+        Nickname:    u.Nickname,
     }
 }

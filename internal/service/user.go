@@ -10,7 +10,7 @@ import (
 )
 
 var (
-    ErrDuplicateEmail        = repository.ErrDuplicateEmail
+    ErrDuplicateEmail        = repository.ErrDuplicateUser
     ErrInvalidUserOrPassword = errors.New("用户不存在或者密码不对")
     ErrEditFailure           = repository.ErrEditFailure
     ErrInvalidUser           = errors.New("用户不存在")
@@ -64,4 +64,20 @@ func (svc *UserService) Profile(ctx *gin.Context, Id int64) (domain.UserProfile,
         return domain.UserProfile{}, err
     }
     return u, nil
+}
+
+func (svc *UserService) FindOrCreate(ctx *gin.Context, phone string) (domain.User, error) {
+    u, err := svc.repo.FindByPhone(ctx, phone)
+    if !errors.Is(err, repository.ErrUserNotFound) {
+        return u, err
+    }
+    err = svc.repo.Create(ctx, domain.User{
+        Phone: phone,
+    })
+
+    if err != nil && !errors.Is(err, repository.ErrDuplicateUser) {
+        return domain.User{}, err
+    }
+    // TODO: 主从延迟，强制走主库
+    return svc.repo.FindByPhone(ctx, phone)
 }

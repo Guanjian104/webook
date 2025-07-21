@@ -17,7 +17,10 @@ func (m *LoginMiddlewareBuilder) CheckLogin() gin.HandlerFunc {
     gob.Register(time.Now())
     return func(ctx *gin.Context) {
         path := ctx.Request.URL.Path
-        if path == "/users/signup" || path == "/users/login" {
+        if path == "/users/signup" ||
+            path == "/users/login" ||
+            path == "/login_sms/code/send" ||
+            path == "/login_sms" {
             return
         }
         sess := sessions.Default(ctx)
