@@ -3,18 +3,18 @@ package domain
 import "time"
 
 type User struct {
-	Id          int64
-	Email       string
-	Password    string
-	Nickname    string
-	Birthday    string
-	Description string
+    Id          int64
+    Email       string
+    Password    string
+    Nickname    string
+    Birthday    string
+    Description string
 
-	Ctime time.Time
+    Ctime time.Time
 }
 
 type UserProfile struct {
-	Nickname    string
-	Birthday    string
-	Description string
+    Nickname    string
+    Birthday    string
+    Description string
 }

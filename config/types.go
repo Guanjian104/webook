@@ -1,14 +1,14 @@
 package config
 
 type config struct {
-	DB    DBConfig
-	Redis RedisConfig
+    DB    DBConfig
+    Redis RedisConfig
 }
 
 type DBConfig struct {
-	DSN string
+    DSN string
 }
 
 type RedisConfig struct {
-	Addr string
+    Addr string
 }
