@@ -30,7 +30,7 @@ func main() {
 
     codeSvc := initCodeSvc(redisClient)
 
-    server := initWebServer()
+    server := initWebServer(redisClient)
 
     initUserHdl(db, redisClient, codeSvc, server)
 
@@ -80,7 +80,7 @@ func initSmsMemoryService() sms.Service {
     return localsms.NewService()
 }
 
-func initWebServer() *gin.Engine {
+func initWebServer(redisClient redis.Cmdable) *gin.Engine {
     server := gin.Default()
 
     server.Use(cors.New(cors.Config{
@@ -96,9 +96,6 @@ func initWebServer() *gin.Engine {
         MaxAge: 12 * time.Hour,
     }))
 
-    redisClient := redis.NewClient(&redis.Options{
-        Addr: config.Config.Redis.Addr,
-    })
     server.Use(ratelimit.NewBuilder(redisClient, time.Second, 100).Build())
 
     useJWT(server)
