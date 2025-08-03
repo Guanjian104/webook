@@ -15,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1200
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.1200
+	go.uber.org/mock v0.5.2
 	golang.org/x/crypto v0.37.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.0
