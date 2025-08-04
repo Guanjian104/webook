@@ -5,7 +5,6 @@ import (
     "errors"
     "github.com/Guanjian104/webook/internal/domain"
     "github.com/Guanjian104/webook/internal/repository"
-    "github.com/gin-gonic/gin"
     "golang.org/x/crypto/bcrypt"
 )
 
@@ -18,10 +17,10 @@ var (
 
 type UserService interface {
     Signup(ctx context.Context, u domain.User) error
-    Login(ctx *gin.Context, email string, password string) (domain.User, error)
+    Login(ctx context.Context, email string, password string) (domain.User, error)
     Edit(ctx context.Context, u domain.User) error
-    Profile(ctx *gin.Context, Id int64) (domain.UserProfile, error)
-    FindOrCreate(ctx *gin.Context, phone string) (domain.User, error)
+    Profile(ctx context.Context, Id int64) (domain.UserProfile, error)
+    FindOrCreate(ctx context.Context, phone string) (domain.User, error)
 }
 
 type userService struct {
@@ -43,7 +42,7 @@ func (svc *userService) Signup(ctx context.Context, u domain.User) error {
     return svc.repo.Create(ctx, u)
 }
 
-func (svc *userService) Login(ctx *gin.Context, email string, password string) (domain.User, error) {
+func (svc *userService) Login(ctx context.Context, email string, password string) (domain.User, error) {
     u, err := svc.repo.FindByEmail(ctx, email)
     if errors.Is(err, repository.ErrUserNotFound) {
         return domain.User{}, ErrInvalidUserOrPassword
@@ -63,7 +62,7 @@ func (svc *userService) Edit(ctx context.Context, u domain.User) error {
     return svc.repo.Edit(ctx, u)
 }
 
-func (svc *userService) Profile(ctx *gin.Context, Id int64) (domain.UserProfile, error) {
+func (svc *userService) Profile(ctx context.Context, Id int64) (domain.UserProfile, error) {
     u, err := svc.repo.FindById(ctx, Id)
     if errors.Is(err, repository.ErrUserNotFound) {
         return domain.UserProfile{}, ErrInvalidUser
@@ -74,7 +73,7 @@ func (svc *userService) Profile(ctx *gin.Context, Id int64) (domain.UserProfile,
     return u, nil
 }
 
-func (svc *userService) FindOrCreate(ctx *gin.Context, phone string) (domain.User, error) {
+func (svc *userService) FindOrCreate(ctx context.Context, phone string) (domain.User, error) {
     u, err := svc.repo.FindByPhone(ctx, phone)
     if !errors.Is(err, repository.ErrUserNotFound) {
         return u, err
