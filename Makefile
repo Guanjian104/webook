@@ -14,8 +14,8 @@ mock:
 	@mockgen -source=./webook/internal/service/sms/types.go -package=smsmocks -destination=./webook/internal/service/sms/mocks/sms.mock.go
 	@mockgen -source ./internal/repository/code.go  -package repomocks  -destination ./internal/repository/mocks/code.mock.go
 	@mockgen -source ./internal/repository/user.go  -package repomocks  -destination ./internal/repository/mocks/user.mock.go
-	@mockgen -source=./webook/internal/repository/dao/user.go -package=daomocks -destination=./webook/internal/repository/dao/mocks/user.mock.go
-	@mockgen -source=./webook/internal/repository/cache/user.go -package=cachemocks -destination=./webook/internal/repository/cache/mocks/user.mock.go
-	@mockgen -source=./webook/internal/repository/cache/code.go -package=cachemocks -destination=./webook/internal/repository/cache/mocks/code.mock.go
+	@mockgen -source=./internal/repository/dao/user.go -package=daomocks -destination=./internal/repository/dao/mocks/user.mock.go
+	@mockgen -source=./internal/repository/cache/user.go -package=cachemocks -destination=./internal/repository/cache/mocks/user.mock.go
+	@mockgen -source=./internal/repository/cache/code.go -package=cachemocks -destination=./internal/repository/cache/mocks/code.mock.go
 	@mockgen -source=./webook/pkg/limiter/types.go -package=limitermocks -destination=./webook/pkg/limiter/mocks/limiter.mock.go
 	@go mod tidy
