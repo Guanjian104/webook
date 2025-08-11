@@ -14,7 +14,6 @@ import (
 	reflect "reflect"
 
 	domain "github.com/Guanjian104/webook/internal/domain"
-	gin "github.com/gin-gonic/gin"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -57,7 +56,7 @@ func (mr *MockUserServiceMockRecorder) Edit(ctx, u any) *gomock.Call {
 }
 
 // FindOrCreate mocks base method.
-func (m *MockUserService) FindOrCreate(ctx *gin.Context, phone string) (domain.User, error) {
+func (m *MockUserService) FindOrCreate(ctx context.Context, phone string) (domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindOrCreate", ctx, phone)
 	ret0, _ := ret[0].(domain.User)
@@ -72,7 +71,7 @@ func (mr *MockUserServiceMockRecorder) FindOrCreate(ctx, phone any) *gomock.Call
 }
 
 // Login mocks base method.
-func (m *MockUserService) Login(ctx *gin.Context, email, password string) (domain.User, error) {
+func (m *MockUserService) Login(ctx context.Context, email, password string) (domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, email, password)
 	ret0, _ := ret[0].(domain.User)
@@ -87,7 +86,7 @@ func (mr *MockUserServiceMockRecorder) Login(ctx, email, password any) *gomock.C
 }
 
 // Profile mocks base method.
-func (m *MockUserService) Profile(ctx *gin.Context, Id int64) (domain.UserProfile, error) {
+func (m *MockUserService) Profile(ctx context.Context, Id int64) (domain.UserProfile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Profile", ctx, Id)
 	ret0, _ := ret[0].(domain.UserProfile)
