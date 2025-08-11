@@ -4,9 +4,10 @@ import (
     "context"
     "errors"
     "fmt"
+    "math/rand"
+
     "github.com/Guanjian104/webook/internal/repository"
     "github.com/Guanjian104/webook/internal/service/sms"
-    "math/rand"
 )
 
 var ErrCodeSendTooMany = repository.ErrCodeVerifyTooMany

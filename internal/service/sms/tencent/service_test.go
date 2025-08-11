@@ -2,12 +2,13 @@ package tencent
 
 import (
     "context"
+    "os"
+    "testing"
+
     "github.com/stretchr/testify/assert"
     "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
     "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
     sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
-    "os"
-    "testing"
 )
 
 func TestSender(t *testing.T) {

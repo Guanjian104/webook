@@ -3,13 +3,14 @@ package service
 import (
     "context"
     "errors"
+    "testing"
+
     "github.com/Guanjian104/webook/internal/domain"
     "github.com/Guanjian104/webook/internal/repository"
     repomocks "github.com/Guanjian104/webook/internal/repository/mocks"
     "github.com/stretchr/testify/assert"
     "go.uber.org/mock/gomock"
     "golang.org/x/crypto/bcrypt"
-    "testing"
 )
 
 func TestPasswordEncrypt(t *testing.T) {

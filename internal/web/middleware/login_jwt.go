@@ -1,13 +1,14 @@
 package middleware
 
 import (
-    "github.com/Guanjian104/webook/internal/web"
-    "github.com/gin-gonic/gin"
-    "github.com/golang-jwt/jwt/v5"
     "log"
     "net/http"
     "strings"
     "time"
+
+    "github.com/Guanjian104/webook/internal/web"
+    "github.com/gin-gonic/gin"
+    "github.com/golang-jwt/jwt/v5"
 )
 
 type LoginJWTMiddlewareBuilder struct {

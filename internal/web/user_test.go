@@ -4,6 +4,10 @@ import (
     "bytes"
     "context"
     "errors"
+    "net/http"
+    "net/http/httptest"
+    "testing"
+
     "github.com/Guanjian104/webook/internal/domain"
     "github.com/Guanjian104/webook/internal/service"
     svcmocks "github.com/Guanjian104/webook/internal/service/mocks"
@@ -11,9 +15,6 @@ import (
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
     "go.uber.org/mock/gomock"
-    "net/http"
-    "net/http/httptest"
-    "testing"
 )
 
 func TestUserHandler_SignUp(t *testing.T) {
